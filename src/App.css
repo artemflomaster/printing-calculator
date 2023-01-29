@@ -1,0 +1,14 @@
+.App{
+
+  border: 1px solid black;
+}
+
+.canvas-wrapper{
+  height: 600px;
+  border: 0px solid rgb(239, 255, 176);
+}
+
+.form{
+  margin: 25px;
+  text-align: center;
+}
