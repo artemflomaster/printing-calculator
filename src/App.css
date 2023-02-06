@@ -1,21 +1,66 @@
 .App {
-
-  border: 1px solid black;
+  font-family: 'Geometria', Arial, sans-serif;
+  border: 0px solid rgb(125, 125, 125);
+  font-size: 18px;
+  line-height: 36px;
+  display: flex;
+  flex-wrap: wrap;
 }
 
-/* .canvas-wrapper {
-  height: 600px;
-  border: 0px solid rgb(239, 255, 176);
+.canvas-wrapper {
+  height: 500px;
+  width: 500px;
+  border: 1px solid rgb(205, 205, 205);
+  margin: 0 15px 15px 15px;
 }
 
-.form {
-  margin: 25px;
-  text-align: center;
-} */
+.ui-wrapper {
+  margin: 0 15px 15px 15px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgb(205, 205, 205);
+}
 
-.model {
-  height: 540px;
-  width: 540px;
-  position: relative;
-  border: 5px solid rgb(59, 19, 147);
+.picker {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  /* border: 1px solid rgb(205, 205, 205); */
+}
+
+
+input[type=file]::file-selector-button {
+  background-color: #ffbc03;
+  border: 0;
+  font-size: 18px;
+  line-height: 36px;
+  display: none;
+
+}
+
+
+input[type=file] {
+  font-size: 18px;
+  line-height: 36px;
+  margin: 0 15px;
+}
+
+button {
+  background-color: #ffbc03;
+  border: 0;
+  font-size: 18px;
+  line-height: 36px;
+}
+
+select {
+  background-color: #ffbc03;
+  font-size: 18px;
+  line-height: 36px;
+  margin: 0 15px;
+  border: 0px;
+}
+
+.uppercase {
+  vertical-align: super;
+  font-size: medium;  
 }

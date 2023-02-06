@@ -1,239 +1,273 @@
 import "./App.css";
 import React from "react";
+import { Suspense } from 'react'
+import { Canvas, useLoader } from '@react-three/fiber';
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import Stats from 'three/examples/jsm/libs/stats.module';
+import { OrbitControls, OrthographicCamera, Html, useProgress } from "@react-three/drei";
 import * as THREE from 'three';
-import { useFilePicker } from 'use-file-picker';
-import { Vector3 } from "three";
+
 
 export default function App() {
 
-  const [modelPath, setPath] = React.useState({
-    loaded: false,
-    path: "/test.stl"
-  }
-  );
-
   const [modelData, setModelData] = React.useState({
+    loaded: false,
+    path: "/test.stl",
     x: '',
     y: '',
     z: '',
-    volume: ''
-  })
+    volume: '',
+    price: undefined,
+    scale: 1
+  }
+  );
+
+  const scale = modelData.scale;
 
 
-  //new model loading
-  function loadStl(scene, loadPath, camera, target) {
-    return new Promise((resolve, reject) => {
-      const material = new THREE.MeshNormalMaterial();
-      const position = new Vector3(0, 0, 0);
-      const loader = new STLLoader();
-      loader.load(loadPath,
-        function (geometry) {
-          geometry.computeBoundingSphere();
-          //const sphere = geometry.boundingSphere
-          geometry.computeBoundingBox();
-          const boxer = geometry.boundingBox;
-          geometry.center();
-          //
-          //geometry.lookAt(target)
-          //const theBox = new THREE.Mesh(boxer, material)
-          // scene.add(theBox);
-          //console.log(boxer, "minX :", boxer.min.x, "maxX :", boxer.max.x, "center: ", geometry.center());
-          //geometry.position.set(0,0,0);
-          // geometry.position.x = 0;
-          // geometry.position.y = 0;
-          // geometry.position.z = 0;
-          const mesh = new THREE.Mesh(geometry, material);
+  function TheModel(props) {
+    const stl = useLoader(STLLoader, modelData.path);
+    stl.center();
+    stl.computeBoundingBox();
 
-          //mesh.DEFAULT_MATRIX_WORLD_AUTO_UPDATE(true) ;
-          //mesh.computeBoundingBox(true);
-          //mesh.boundingBox(true)
-          scene.add(mesh);
+    const wid = stl.boundingBox.max.x - stl.boundingBox.min.x;
+    const glub = stl.boundingBox.max.y - stl.boundingBox.min.y;
+    const hei = stl.boundingBox.max.z - stl.boundingBox.min.z;
 
-          // scene.add(sphere);
-          //console.log(calculateCenterOfMass(mesh));
-          // mesh.matrixAutoUpdate = true;
-          //mesh.matrixWorldNeedsUpdate = true;
-          //  geometry.position.x = 0;
-          // geometry.position.y = 0;
-          //  geometry.position.z = 0;
-          // geometry.translate(target);
-            //update camera
-            const wid = mesh.geometry.boundingBox.max.x - mesh.geometry.boundingBox.min.x;
-            const glub = mesh.geometry.boundingBox.max.y - mesh.geometry.boundingBox.min.y;
-            const hei = mesh.geometry.boundingBox.max.z - mesh.geometry.boundingBox.min.z;
-            const zoom = 2;
-            if (hei > wid) {
-              camera.top = zoom * (hei / 2);
-              camera.bottom = zoom * (hei / -2);
-              camera.right = zoom * (hei / 2);
-              camera.left = zoom * (hei / -2);
-            } else {
-              camera.right = zoom * (wid / 2);
-              camera.left = zoom * (wid / -2);
-              camera.top = zoom * (wid / 2);
-              camera.bottom = zoom * (wid / -2);
 
-            }
-           
-            //   setModelData({
-            //   ...modelData,
-            //   x: wid,
-            //   z: hei,
-            //   y: glub
-            // })
-            
-            camera.updateProjectionMatrix();
-            console.log(mesh.geometry.boundingBox);
-          resolve(mesh, boxer);
-        },
-        (xhr) => {
-          console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
-        },
-        (error) => {
-          console.log(error);
-          reject(error);
-        }
+    //volume calculation
+    let volume = 0;
+    let p1 = new THREE.Vector3();
+    let p2 = new THREE.Vector3();
+    let p3 = new THREE.Vector3();
 
-      )
-    })
+    let position = stl.attributes.position;
+    let faces = stl.attributes.position.count / 3;
+    for (let i = 0; i < faces; i++) {
+      p1.fromBufferAttribute(position, i * 3 + 0);
+      p2.fromBufferAttribute(position, i * 3 + 1);
+      p3.fromBufferAttribute(position, i * 3 + 2);
+      volume += signedVolumeOfTriangle(p1, p2, p3);
+
+    }
+
+    function signedVolumeOfTriangle(p1, p2, p3) {
+      return p1.dot(p2.cross(p3)) / 6.0;
+    }
+
+
+    // console.log("stl: ", stl, "vol: ", volume)
+
+    props.updater(wid, hei, glub, volume);
+    return (
+      <mesh>
+        <primitive object={stl} />
+        <meshNormalMaterial />
+      </mesh>
+    )
+
   }
 
-
-
-  //new Model object
-  const Dinosaur = () => {
-    const refContainer = React.useRef();
-    const [loading, setLoading] = React.useState(true);
-    const [renderer, setRenderer] = React.useState();
-
-    React.useEffect(() => {
-      const { current: container } = refContainer;
-      if (container && !renderer) {
-        const scW = container.clientWidth;
-        const scH = container.clientHeight;
-        const renderer = new THREE.WebGLRenderer({
-          antialias: true,
-          alpha: true
-        });
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setSize(scW, scH);
-        renderer.outputEncoding = THREE.sRGBEncoding;
-        container.appendChild(renderer.domElement);
-        setRenderer(renderer);
-
-        const scene = new THREE.Scene();
-        const scale = 1;
-        // const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 2000);
-        const camera = new THREE.OrthographicCamera(150 / - 2, 150 / 2, 150 / 2, 150 / - 2, -300, 1000);
-        camera.position.z = 100;
-        camera.position.y = 100;
-        camera.up.set(0, 0, 1);
-        const target = new THREE.Vector3(0, 0, 0);
-        camera.lookAt(target);
-        scene.add(new THREE.AxesHelper())
-        //const light = new THREE.SpotLight()
-        //  light.position.set(1, 1, 1)
-        //  scene.add(light)
-        // const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-        //scene.add(ambientLight);
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.autoRotate = true;
-        controls.enableDamping = true;
-        controls.target = target;
-
-
-        loadStl(scene, modelPath.path, camera, target)
-          .then((mesh) => {
-
-
-            animate();
-
-            setLoading(false);
-
-          });
-
-        const animate = () => {
-          requestAnimationFrame(animate);
-          controls.update();
-          renderer.render(scene, camera);
-        };
-
-        return () => {
-          renderer.dispose();
-        };
-      }
-    }, [modelPath]);
-
-    return (
-      <div className="model" ref={refContainer}>
-        {loading && (
-          <span style={{ position: "absolute", left: "50%", top: "50%" }}>
-            Loading...
-          </span>
-        )}
-      </div>
-    );
-  };
-
-
-
-  //scene
-  // const scene = new THREE.Scene()
-  // scene.add(new THREE.AxesHelper(5))
-
-  // // const light = new THREE.SpotLight()
-  // // light.position.set(20, 20, 20)
-  // // scene.add(light)
-
-  // const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  // camera.position.z = 1
-  // const renderer = new THREE.WebGLRenderer()
-  // renderer.outputEncoding = THREE.sRGBEncoding
-  // renderer.setSize(window.innerWidth, window.innerHeight)
-  // document.body.appendChild(renderer.domElement)
-  // const controls = new OrbitControls(camera, renderer.domElement)
-  // controls.enableDamping = true
-
+  function smartUpdater(wid, hei, glub, volume) {
+    if (!modelData.loaded) {
+      setModelData({
+        ...modelData,
+        loaded: true,
+        x: wid,
+        y: glub,
+        z: hei,
+        volume: volume
+      })
+    }
+  }
 
   function pathSetter() {
     const input = document.querySelector('input');
     const file = input.files[0];
     const neqPath = URL.createObjectURL(file);
-    setPath({
-      loaded: true,
+    setModelData({
+      ...modelData,
+      loaded: false,
       path: neqPath
     })
+  }
+
+  function Loader() {
+    const { progress } = useProgress()
+    return <Html center>{progress} % loaded</Html>
+  }
+
+  //camera update
+  const zoom = 1.2;
+  let top = 200;
+  let bottom = -200;
+  let right = -200;
+  let left = 200;
+
+  if (modelData.loaded) {
+
+    if (modelData.x > modelData.y) {
+      top = zoom * (modelData.x / 2);
+      bottom = zoom * (modelData.x / -2);
+      right = zoom * (modelData.x / 2);
+      left = zoom * (modelData.x / -2);
+    } else {
+      top = zoom * (modelData.y / 2);
+      bottom = zoom * (modelData.y / -2);
+      right = zoom * (modelData.y / 2);
+      left = zoom * (modelData.y / -2);
+
+    }
+  }
+
+  function formHandler(e) {
+
+    if (e.target.id === "materials") {
+      console.log("Materials triggered!")
+      const material = e.target.value;
+      switch (material) {
+        case "ABS":
+          setModelData({
+            ...modelData,
+            loaded: false,
+            price: 160
+          });
+          break;
+
+        case "9085":
+          setModelData({
+            ...modelData,
+            loaded: false,
+            price: 380
+          });
+          break;
+
+        case "PS":
+          setModelData({
+            ...modelData,
+            loaded: false,
+            price: 150
+          });
+          break;
+
+        case "PA12":
+          setModelData({
+            ...modelData,
+            loaded: false,
+            price: 180
+          });
+          break;
+
+        case "FC":
+          setModelData({
+            ...modelData,
+            loaded: false,
+            price: 300
+          });
+          break;
+
+        default:
+          console.log('Material was not selected')
+          break;
+      }
+
+    }
+    if (e.target.id === "scale") {
+      console.log("Scale triggered!");
+      const scale = e.target.value;
+      switch (scale) {
+        case "mm":
+          setModelData({
+            ...modelData,
+            loaded: false,
+            scale: 1
+          });
+          break;
+
+        case "cm":
+          setModelData({
+            ...modelData,
+            loaded: false,
+            scale: 10
+          });
+          break;
+        case "inch":
+          setModelData({
+            ...modelData,
+            loaded: false,
+            scale: 25.4
+          });
+          break;
+        default:
+          console.log('Material was not selected')
+          break;
+      }
+    }
 
 
   }
 
   return (
     <div className="App">
-      <div>
-        <p>Модель можно вращать при помощи мыши.</p>
-        <Dinosaur />
-
-        <div>
-
-          <div className="ui-wrapper">
-            <label for="image_uploads">Выберете STL-файл</label>
-            <input
-              onChange={() => pathSetter()}
-              type="file"
-              accept=".stl, .STL"
+      <div className="canvas-wrapper">
+        <Canvas >
+          <Suspense fallback={<Loader />}>
+            <TheModel path={modelData.path} updater={(x, y, z, v) => smartUpdater(x, y, z, v)} />
+            <OrbitControls />
+            <OrthographicCamera
+              makeDefault
+              // zoom={0.9}
+              top={top}
+              bottom={bottom}
+              left={left}
+              right={right}
+              near={-100}
+              far={2000}
+              position={[0, -100, 50]}
             />
-            <div className="ui-size">
-              <div>Размер по X: {modelData.x}</div>
-              <div>Размер по Y: {modelData.y}</div>
-              <div>Размер по Z: {modelData.z}</div>
-            </div>
-            <div className="ui-volume"><div>Объём, см3: {modelData.volume}</div></div>
-          </div>
+          </Suspense>
+        </Canvas>
+      </div>
+      <div className="ui-wrapper">
+        <div className="picker">
+          <button
+            name="pick-button"
+            id="pick-button"
+            onClick={() => document.getElementById("true-picker").click()}
+          >Выберите STL-файл
+          </button>
+          <input
+            className="true-picker"
+            id="true-picker"
+            onChange={() => pathSetter()}
+            type="file"
+            accept=".stl, .STL"
+          />
+          <label for="scale">Выберите единицы измерения файла:</label>
+          <select id="scale" name="scale" defaultValue="Нужно выбрать" onChange={(e) => { formHandler(e) }}>
+            <option value="mm" selected>мм</option>
+            <option value="cm">см</option>
+            <option value="inch">дюйм</option>
+          </select>
+        </div>
+
+        <div className="ui-size">
+          <div>Размеры: {(Math.round((modelData.x*scale) * 100) / 100)} мм х {Math.round((modelData.y*scale) * 100) / 100} мм х {Math.round((modelData.z*scale) * 100) / 100} мм</div>
+        </div>
+        <div className="ui-volume"><div>Объём: {Math.round((modelData.volume*Math.pow(scale, 3)) / 10) / 100} см<span className="uppercase">3</span></div></div>
+
+        <div className="ui-calc">
+          <label for="materials">Выберите материал:</label>
+          <select id="materials" name="materials" defaultValue="Нужно выбрать" onChange={(e) => { formHandler(e) }}>
+            <option disabled selected hidden>Нужно выбрать</option>
+            <option value="ABS">АБС</option>
+            <option value="9085">Ultem 9085</option>
+            <option value="PA12">Полиамид 12</option>
+            <option value="PS">Полистирол</option>
+            <option value="FC">Фотополимер</option>
+          </select>
+          <div>{modelData.price ? "Стоимость печати: " + Math.round(modelData.price * modelData.volume * Math.pow(scale, 3) / 1000) + " рублей" : ""}</div>
         </div>
       </div>
     </div>
-  );
+  )
 }
