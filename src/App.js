@@ -1,13 +1,14 @@
 import "./App.css";
 import React from "react";
 import { Suspense } from 'react'
-import { Canvas, useLoader } from '@react-three/fiber';
+import { Canvas, useLoader} from '@react-three/fiber';
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 import { OrbitControls, OrthographicCamera, Html, useProgress } from "@react-three/drei";
 import * as THREE from 'three';
 
 
 export default function App() {
+
 
   const [modelData, setModelData] = React.useState({
     loaded: false,
@@ -20,6 +21,12 @@ export default function App() {
     scale: 1
   }
   );
+
+
+
+
+
+
 
   const scale = modelData.scale;
 
@@ -119,50 +126,40 @@ export default function App() {
     }
   }
 
+
   function formHandler(e) {
 
     if (e.target.id === "materials") {
-      console.log("Materials triggered!")
       const material = e.target.value;
+
+      //set price shortcut
+      function setPrice(price) {
+        setModelData({
+          ...modelData,
+          loaded: false,
+          price: price
+        });
+      }
+
       switch (material) {
         case "ABS":
-          setModelData({
-            ...modelData,
-            loaded: false,
-            price: 160
-          });
+          setPrice(160);
           break;
 
         case "9085":
-          setModelData({
-            ...modelData,
-            loaded: false,
-            price: 380
-          });
+          setPrice(380);
           break;
 
         case "PS":
-          setModelData({
-            ...modelData,
-            loaded: false,
-            price: 150
-          });
+          setPrice(150);
           break;
 
         case "PA12":
-          setModelData({
-            ...modelData,
-            loaded: false,
-            price: 180
-          });
+          setPrice(180);
           break;
 
         case "FC":
-          setModelData({
-            ...modelData,
-            loaded: false,
-            price: 300
-          });
+          setPrice(300);
           break;
 
         default:
@@ -172,59 +169,55 @@ export default function App() {
 
     }
     if (e.target.id === "scale") {
-      console.log("Scale triggered!");
       const scale = e.target.value;
+
+      //set scale shortcut
+      function setScale(scale) {
+        setModelData({
+          ...modelData,
+          loaded: false,
+          scale: scale
+        });
+      }
+
       switch (scale) {
         case "mm":
-          setModelData({
-            ...modelData,
-            loaded: false,
-            scale: 1
-          });
+          setScale(1);
           break;
-
         case "cm":
-          setModelData({
-            ...modelData,
-            loaded: false,
-            scale: 10
-          });
+          setScale(10);
           break;
         case "inch":
-          setModelData({
-            ...modelData,
-            loaded: false,
-            scale: 25.4
-          });
+          setScale(24.5);
           break;
         default:
           console.log('Material was not selected')
           break;
       }
     }
-
-
   }
+
 
   return (
     <div className="App">
       <div className="canvas-wrapper">
-        <Canvas >
+        <Canvas resize={{ scroll: false }}>
           <Suspense fallback={<Loader />}>
             <TheModel path={modelData.path} updater={(x, y, z, v) => smartUpdater(x, y, z, v)} />
-            <OrbitControls />
-            <OrthographicCamera
-              makeDefault
-              // zoom={0.9}
-              top={top}
-              bottom={bottom}
-              left={left}
-              right={right}
-              near={-100}
-              far={2000}
-              position={[0, -100, 50]}
-            />
           </Suspense>
+          <OrbitControls />
+          <OrthographicCamera
+            makeDefault
+            // zoom={0.9}
+            top={top}
+            bottom={bottom}
+            left={left}
+            right={right}
+            near={-100}
+            far={2000}
+            position={[0, -100, 50]}
+          />
+
         </Canvas>
       </div>
       <div className="ui-wrapper">
@@ -242,23 +235,23 @@ export default function App() {
             type="file"
             accept=".stl, .STL"
           />
-          <label for="scale">Выберите единицы измерения файла:</label>
-          <select id="scale" name="scale" defaultValue="Нужно выбрать" onChange={(e) => { formHandler(e) }}>
-            <option value="mm" selected>мм</option>
+          <label htmlFor="scale">Выберите единицы измерения файла:</label>
+          <select id="scale" name="scale" defaultValue="mm" onChange={(e) => { formHandler(e) }}>
+            <option value="mm">мм</option>
             <option value="cm">см</option>
             <option value="inch">дюйм</option>
           </select>
         </div>
 
         <div className="ui-size">
-          <div>Размеры: {(Math.round((modelData.x*scale) * 100) / 100)} мм х {Math.round((modelData.y*scale) * 100) / 100} мм х {Math.round((modelData.z*scale) * 100) / 100} мм</div>
+          <div>Размеры: {(Math.round((modelData.x * scale) * 100) / 100)} мм х {Math.round((modelData.y * scale) * 100) / 100} мм х {Math.round((modelData.z * scale) * 100) / 100} мм</div>
         </div>
-        <div className="ui-volume"><div>Объём: {Math.round((modelData.volume*Math.pow(scale, 3)) / 10) / 100} см<span className="uppercase">3</span></div></div>
+        <div className="ui-volume"><div>Объём: {Math.round((modelData.volume * Math.pow(scale, 3)) / 10) / 100} см<span className="uppercase">3</span></div></div>
 
         <div className="ui-calc">
-          <label for="materials">Выберите материал:</label>
-          <select id="materials" name="materials" defaultValue="Нужно выбрать" onChange={(e) => { formHandler(e) }}>
-            <option disabled selected hidden>Нужно выбрать</option>
+          <label htmlFor="materials">Выберите материал:</label>
+          <select id="materials" name="materials" defaultValue="ABS" onChange={(e) => { formHandler(e) }}>
+            {/* <option disabled selected hidden>Нужно выбрать</option> */}
             <option value="ABS">АБС</option>
             <option value="9085">Ultem 9085</option>
             <option value="PA12">Полиамид 12</option>
