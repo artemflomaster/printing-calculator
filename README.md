@@ -1,3 +1,7 @@
+# Простой вэб-просмотрщик и калькулятор STL-файлов
+
+Расчетные коэффициенты внесены прямо в код. Планирую добавить получение доступных опций и материалов по API.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
