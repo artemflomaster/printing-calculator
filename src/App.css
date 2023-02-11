@@ -2,35 +2,57 @@
   font-family: 'Geometria', Arial, sans-serif;
   border: 0px solid rgb(125, 125, 125);
   font-size: 18px;
+  color: #1A2027;
   line-height: 36px;
   display: flex;
   flex-wrap: wrap;
 }
+
+body {
+  background-image: radial-gradient(#6a6a6a 5.5%, #f9f9f9 5.5%);
+  background-position: 0 0;
+  background-size: 20px 20px;
+  height: 200px;
+  width: 100%;
+}
+
+
 
 .canvas-wrapper {
   height: 500px;
   width: 500px;
   border: 1px solid rgb(205, 205, 205);
   margin: 0 15px 15px 15px;
+  border-radius: 5px;
+  padding: 0px;
+  background-color: white;
 }
 
 .ui-wrapper {
+  width: 500px;
   margin: 0 15px 15px 15px;
   display: flex;
   flex-direction: column;
-  border: 1px solid rgb(205, 205, 205);
+  /* border: 1px solid rgb(205, 205, 205); */
+  /* border-radius: 0px 0px 0px 0px; */
 }
 
 .picker {
   display: flex;
   flex-direction: column;
-  margin-bottom: 15px;
+  
   /* border: 1px solid rgb(205, 205, 205); */
+}
+
+.ui-volume{
+  height: 36px;
+  line-height: 36px;
 }
 
 
 input[type=file]::file-selector-button {
-  background-color: #ffbc03;
+  
+  background-color:#ba68c8;
   border: 0;
   font-size: 18px;
   line-height: 36px;
@@ -46,21 +68,31 @@ input[type=file] {
 }
 
 button {
-  background-color: #ffbc03;
-  border: 0;
+  width: 200px;
+  color: #42a5f5;
+  background-color: #ffffff;
+  border: 1px solid #42a5f5;;
   font-size: 18px;
   line-height: 36px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-bottom: 10px;
 }
 
 select {
-  background-color: #ffbc03;
+  color:#ba68c8;
+  background-color: #ffffff;
   font-size: 18px;
   line-height: 36px;
   margin: 0 15px;
-  border: 0px;
+  border: 1px solid #ba68c8;;
+  cursor: pointer;
+  border-radius: 5px;
 }
 
 .uppercase {
-  vertical-align: super;
   font-size: medium;  
+  vertical-align: baseline;
+  position: relative;
+  top: -0.4em;
 }
