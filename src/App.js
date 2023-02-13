@@ -5,7 +5,7 @@ import { Canvas, useLoader } from '@react-three/fiber';
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 import { OrbitControls, OrthographicCamera, Html, useProgress } from "@react-three/drei";
 import * as THREE from 'three';
-import { Routes, Route } from 'react-router-dom';
+import Select from "react-select";
 
 export default function App() {
 
@@ -188,91 +188,87 @@ export default function App() {
       }
     }
   }
-  function NoMatch() {
-    return (
-      <div className="404">Тут нету такого!</div>
-    )
-  }
 
 
-
-
-  function Layout() {
-    return (
-
-
-      <div className="App">
-        <div className="canvas-wrapper">
-
-          <Canvas resize={{ scroll: false }}>
-            <Suspense fallback={<Loader />}>
-              <TheModel path={modelData.path} updater={(x, y, z, v) => smartUpdater(x, y, z, v)} />
-            </Suspense>
-            <OrbitControls />
-            <OrthographicCamera
-              makeDefault
-              // zoom={0.9}
-              top={top}
-              bottom={bottom}
-              left={left}
-              right={right}
-              near={-100}
-              far={2000}
-              position={[0, -100, 50]}
-            />
-
-          </Canvas>
-        </div>
-        <div className="ui-wrapper">
-          <button
-            name="pick-button"
-            id="pick-button"
-            onClick={() => document.getElementById("true-picker").click()}
-          >Выберите STL-файл
-          </button>
-
-          <div className="true-picker">Имя файла:
-            <input
-              id="true-picker"
-              onChange={() => pathSetter()}
-              type="file"
-              accept=".stl, .STL"
-            />
-          </div>
-
-          <div className="scale">
-            <label htmlFor="scale">Единицы измерения файла:</label>
-            <select id="scale" name="scale" defaultValue="mm" onChange={(e) => { formHandler(e) }}>
-              <option value="mm">мм</option>
-              <option value="cm">см</option>
-              <option value="inch">дюйм</option>
-            </select>
-          </div>
-
-          <div className="ui-size">Размеры: {(Math.round((modelData.x * scale) * 100) / 100)} мм х {Math.round((modelData.y * scale) * 100) / 100} мм х {Math.round((modelData.z * scale) * 100) / 100} мм</div>
-
-          <div className="ui-volume">Объём: {Math.round((modelData.volume * Math.pow(scale, 3)) / 10) / 100} см<span className="uppercase">3</span></div>
-
-          <div className="ui-calc">
-            <label htmlFor="materials">Выберите материал:</label>
-            <select id="materials" name="materials" defaultValue="ABS" onChange={(e) => { formHandler(e) }}>
-              {/* <option disabled selected hidden>Нужно выбрать</option> */}
-              <option value="ABS">АБС</option>
-              <option value="9085">Ultem 9085</option>
-              <option value="PA12">Полиамид 12</option>
-              <option value="PS">Полистирол</option>
-              <option value="FC">Фотополимер</option>
-            </select>
-            <div>{modelData.price ? "Стоимость печати: " + Math.round(modelData.price * modelData.volume * Math.pow(scale, 3) / 1000) + " рублей" : ""}</div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const options = [
+    { value: 'ABS', label: 'АБС' },
+    { value: '9085', label: 'Ultem 9085' },
+    { value: 'PA12', label: 'Полиамид 12' },
+    { value: 'PS', label: 'Полистирол' },
+    { value: 'FC', label: 'Фотополимер' }
+  ]
 
 
 
   return (
-    <Layout />
+
+
+    <div className="App">
+      <div className="canvas-wrapper">
+
+        <Canvas resize={{ scroll: false }}>
+          <Suspense fallback={<Loader />}>
+            <TheModel path={modelData.path} updater={(x, y, z, v) => smartUpdater(x, y, z, v)} />
+          </Suspense>
+          <OrbitControls />
+          <OrthographicCamera
+            makeDefault
+            // zoom={0.9}
+            top={top}
+            bottom={bottom}
+            left={left}
+            right={right}
+            near={-100}
+            far={2000}
+            position={[0, -100, 50]}
+          />
+
+        </Canvas>
+      </div>
+      <div className="ui-wrapper">
+        <button
+          name="pick-button"
+          id="pick-button"
+          onClick={() => document.getElementById("true-picker").click()}
+        >Выберите STL-файл
+        </button>
+
+        <div className="true-picker">Имя файла:
+          <input
+            id="true-picker"
+            onChange={() => pathSetter()}
+            type="file"
+            accept=".stl, .STL"
+          />
+        </div>
+
+        <div className="scale">
+          <label htmlFor="scale">Единицы измерения файла:</label>
+          <select id="scale" name="scale" defaultValue="mm" onChange={(e) => { formHandler(e) }}>
+            <option value="mm">мм</option>
+            <option value="cm">см</option>
+            <option value="inch">дюйм</option>
+          </select>
+        </div>
+
+        <div className="ui-size">Размеры: {(Math.round((modelData.x * scale) * 100) / 100)} мм х {Math.round((modelData.y * scale) * 100) / 100} мм х {Math.round((modelData.z * scale) * 100) / 100} мм</div>
+
+        <div className="ui-volume">Объём: {Math.round((modelData.volume * Math.pow(scale, 3)) / 10) / 100} см<span className="uppercase">3</span></div>
+
+        <div className="ui-calc">
+          <label htmlFor="materials">Выберите материал:</label>
+          <select id="materials" name="materials" defaultValue="ABS" onChange={(e) => { formHandler(e) }}>
+            {/* <option disabled selected hidden>Нужно выбрать</option> */}
+            <option value="ABS">АБС</option>
+            <option value="9085">Ultem 9085</option>
+            <option value="PA12">Полиамид 12</option>
+            <option value="PS">Полистирол</option>
+            <option value="FC">Фотополимер</option>
+          </select>
+          {/* <Select options={options} id="materials" onChange={(e) => { formHandler(e) }} /> */}
+          <div>{modelData.price ? "Стоимость печати: " + Math.round(modelData.price * modelData.volume * Math.pow(scale, 3) / 1000) + " рублей" : ""}</div>
+        </div>
+      </div>
+    </div>
   )
 }
